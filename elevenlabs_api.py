@@ -4,6 +4,7 @@ import requests
 def speak(text):
     api_key = os.getenv("ELEVENLABS_API_KEY")
     voice_id = os.getenv("ELEVENLABS_VOICE_ID", "rachel")
+
     url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
     headers = {
         "xi-api-key": api_key,
@@ -11,12 +12,20 @@ def speak(text):
     }
     data = {
         "text": text,
-        "voice_settings": {"stability": 0.75, "similarity_boost": 0.75}
+        "voice_settings": {
+            "stability": 0.75,
+            "similarity_boost": 0.75
+        }
     }
 
-    os.makedirs("static", exist_ok=True)  # <--- ensures folder exists
-    response = requests.post(url, headers=headers, json=data)
-    with open("static/response.mp3", "wb") as f:
-        f.write(response.content)
-
-    return "https://testagent-eb2i.onrender.com/static/response.mp3"
+    try:
+        os.makedirs("static", exist_ok=True)
+        response = requests.post(url, headers=headers, json=data)
+        response.raise_for_status()  # Will throw error if TTS failed
+        with open("static/response.mp3", "wb") as f:
+            f.write(response.content)
+        print("response.mp3 saved successfully")
+        return "https://testagent-eb2i.onrender.com/static/response.mp3"
+    except Exception as e:
+        print(f"Error generating voice: {e}")
+        return "https://testagent-eb2i.onrender.com/static/fallback.mp3"
