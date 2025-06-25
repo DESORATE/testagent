@@ -1,4 +1,5 @@
 import os
+import requests
 
 def speak(text):
     api_key = os.getenv("ELEVENLABS_API_KEY")
